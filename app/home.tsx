@@ -98,6 +98,71 @@ const HomeScreen = () => {
     return images.map(url => url.startsWith("http") ? url : `${STRAPI_BASE_URL}${url}`);
   };
 
+  // ─── Suivi des profils vus ────────────────────────────────────────────────
+  // Les consultations sont mises en file puis envoyées par lots : un profil
+  // qui défile ne doit pas déclencher une requête à lui seul.
+
+  const vuesEnAttente = useRef<{ viewed: number; action: "seen" | "skipped" }[]>([]);
+  const dejaEnvoyees = useRef<Set<string>>(new Set());
+  const profilAffiche = useRef<number | null>(null);
+
+  const enregistrerVue = (viewed: number, action: "seen" | "skipped") => {
+    const cle = `${viewed}:${action}`;
+    if (dejaEnvoyees.current.has(cle)) return;
+    dejaEnvoyees.current.add(cle);
+
+    vuesEnAttente.current.push({ viewed, action });
+    if (vuesEnAttente.current.length >= 5) envoyerVues();
+  };
+
+  const envoyerVues = async () => {
+    if (vuesEnAttente.current.length === 0 || !token) return;
+
+    const lot = vuesEnAttente.current;
+    vuesEnAttente.current = [];
+
+    try {
+      await apiFetch("/profile-views", {
+        method: "POST",
+        body: JSON.stringify({ data: { views: lot } }),
+      }, token);
+    } catch (error) {
+      // Une statistique perdue ne doit jamais gêner la navigation.
+      console.error("Enregistrement des profils vus impossible", error);
+    }
+  };
+
+  // Le profil occupe tout l'écran : il est « vu » dès qu'il est majoritairement
+  // visible. Celui qu'on quitte sans l'avoir liké est marqué « passé ».
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 }).current;
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: any[] }) => {
+    const visible = viewableItems[0]?.item;
+    if (!visible || visible.id === profilAffiche.current) return;
+
+    const precedent = profilAffiche.current;
+    profilAffiche.current = visible.id;
+
+    enregistrerVue(visible.id, "seen");
+    if (precedent !== null && !sentLikeIdsRef.current.includes(precedent)) {
+      enregistrerVue(precedent, "skipped");
+    }
+  }).current;
+
+  // onViewableItemsChanged doit rester stable : il lit les likes via une
+  // référence plutôt que par fermeture sur l'état.
+  const sentLikeIdsRef = useRef<number[]>([]);
+  useEffect(() => {
+    sentLikeIdsRef.current = sentLikeIds;
+  }, [sentLikeIds]);
+
+  // Envoi de ce qui reste en quittant l'écran.
+  useEffect(() => {
+    return () => {
+      void envoyerVues();
+    };
+  }, []);
+
   const handleLike = async (targetUserId: number) => {
     if (!user || sentLikeIds.includes(targetUserId)) return;
     
@@ -159,6 +224,8 @@ const HomeScreen = () => {
         renderItem={renderUser}
         keyExtractor={(item: any) => item.id.toString()}
         scrollEnabled={mainScrollEnabled}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
         pagingEnabled
         showsVerticalScrollIndicator={false}
         snapToInterval={height}
