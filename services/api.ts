@@ -1,7 +1,9 @@
 
 export const STRAPI_URL = process.env.EXPO_PUBLIC_STRAPI_URL || "http://localhost:1337";
 export const STRAPI_BASE_URL = STRAPI_URL.replace(/\/api$/, "");
-export const STRAPI_TOKEN = process.env.EXPO_PUBLIC_STRAPI_TOKEN || "";
+// Pas de jeton d'API ici : toute variable EXPO_PUBLIC_* est écrite en clair
+// dans l'app distribuée et peut être extraite d'un APK. Les appels
+// authentifiés utilisent le JWT de l'utilisateur, gardé dans SecureStore.
 
 export type StrapiError = {
   status: number;
@@ -42,9 +44,8 @@ export async function apiFetch<T>(
     ...(options.headers as Record<string, string> || {}),
   };
 
-  const authToken = token || STRAPI_TOKEN;
-  if (authToken) {
-    headers["Authorization"] = `Bearer ${authToken}`;
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   let response;
