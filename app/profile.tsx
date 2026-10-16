@@ -404,6 +404,6 @@ const styles = StyleSheet.create({
   miniPhoto: { width: 60, height: 60, borderRadius: 8, marginRight: 10, backgroundColor: COLORS.gray },
   photoGridModal: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-start", gap: 10, marginTop: 10 },
   photoContainerModal: { width: (width - 100) / 3, height: (width - 100) / 3, borderRadius: 12, overflow: "hidden" },
-  photoImage: { width: "100%", height: "100%", resizeMode: "cover" },
+  photoImage: { width: "100%", height: "100%" },
   addPhotoSquareModal: { width: (width - 100) / 3, height: (width - 100) / 3, backgroundColor: "#f5f5f5", borderRadius: 12, justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 2, borderColor: "#ddd" },
 });

@@ -159,11 +159,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    boxShadow: "0px 3px 4px rgba(0, 0, 0, 0.2)",
   },
   avatar: {
     width: 65,

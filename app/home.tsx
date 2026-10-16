@@ -15,6 +15,7 @@ import {
   View,
   ActivityIndicator,
   FlatList,
+  Platform,
   ScrollView
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -423,7 +424,6 @@ const styles = StyleSheet.create({
   backgroundImage: {
     width: width,
     height: height,
-    resizeMode: "cover",
   },
   placeholderImage: {
     ...StyleSheet.absoluteFill,
@@ -449,9 +449,14 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontFamily: "Poppins_700Bold",
     color: "white",
-    textShadowColor: "rgba(0, 0, 0, 0.75)",
-    textShadowOffset: { width: -1, height: 1 },
-    textShadowRadius: 10,
+    ...Platform.select({
+      web: { textShadow: "-1px 1px 10px rgba(0, 0, 0, 0.75)" },
+      default: {
+        textShadowColor: "rgba(0, 0, 0, 0.75)",
+        textShadowOffset: { width: -1, height: 1 },
+        textShadowRadius: 10,
+      },
+    }),
   },
   userAge: {
     fontSize: 24,

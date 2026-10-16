@@ -283,11 +283,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: COLORS.pink,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
+    boxShadow: "0px 4px 5px rgba(249, 140, 215, 0.3)",
   },
   dateDot: {
     position: "absolute",
@@ -333,10 +329,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: "white",
     elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.15)",
   },
   imageOverlayContainer: {
     width: "42%",
@@ -345,7 +338,6 @@ const styles = StyleSheet.create({
   cardImage: {
     width: "100%",
     height: "100%",
-    resizeMode: "cover",
   },
   cardInfo: {
     width: "58%",
@@ -412,7 +404,6 @@ const styles = StyleSheet.create({
   modalImage: {
     width: "100%",
     height: "100%",
-    resizeMode: "cover",
   },
   closeButton: {
     position: "absolute",
@@ -496,10 +487,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 5,
-    shadowColor: COLORS.purple,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    boxShadow: "0px 4px 10px rgba(132, 50, 254, 0.3)",
   },
   modalFooterButtonText: {
     color: "white",

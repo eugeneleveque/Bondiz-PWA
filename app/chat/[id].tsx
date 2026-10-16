@@ -563,11 +563,7 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 20,
     alignItems: "center",
-    shadowColor: COLORS.purple,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    boxShadow: "0px 4px 8px rgba(132, 50, 254, 0.3)",
   },
   createButtonText: {
     fontSize: 16,

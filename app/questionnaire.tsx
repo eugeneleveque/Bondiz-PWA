@@ -546,10 +546,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cta,
     borderColor: COLORS.cta,
     elevation: 5,
-    shadowColor: COLORS.cta,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px rgba(228, 246, 68, 0.3)",
   },
   interestText: {
     color: COLORS.main,

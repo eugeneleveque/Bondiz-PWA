@@ -397,10 +397,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 15,
     elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.3)",
     zIndex: 2,
   },
   timeText: {
@@ -426,10 +423,7 @@ const styles = StyleSheet.create({
     minHeight: 140,
     justifyContent: "center",
     elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    boxShadow: "0px 6px 8px rgba(0, 0, 0, 0.25)",
     // Removed overflow: hidden to allow stars to stick out
   },
   activityTitle: {
@@ -493,7 +487,6 @@ const styles = StyleSheet.create({
   modalImage: {
     width: "100%",
     height: "100%",
-    resizeMode: "cover",
   },
   closeButton: {
     position: "absolute",
@@ -577,10 +570,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 5,
-    shadowColor: COLORS.pink,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    boxShadow: "0px 4px 10px rgba(249, 140, 215, 0.3)",
   },
   modalFooterButtonText: {
     color: "white",

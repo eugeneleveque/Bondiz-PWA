@@ -418,11 +418,7 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 30,
     gap: 10,
-    shadowColor: COLORS.pink,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 5,
+    boxShadow: "0px 4px 10px rgba(249, 140, 215, 0.3)",
   },
   logoutText: {
     fontSize: 18,
@@ -445,11 +441,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 20,
     padding: 25,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
+    boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.1)",
   },
   modalHeader: {
     flexDirection: "row",
@@ -500,11 +492,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     borderRadius: 15,
     alignItems: "center",
-    shadowColor: COLORS.purple,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 5,
+    boxShadow: "0px 4px 10px rgba(132, 50, 254, 0.3)",
   },
   saveButtonText: {
     color: "white",
@@ -513,7 +501,6 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     backgroundColor: COLORS.gray,
-    shadowOpacity: 0,
-    elevation: 0,
+    boxShadow: "none",
   },
 });

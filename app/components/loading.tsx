@@ -1,9 +1,7 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, Easing, StyleSheet, View } from "react-native";
+import { Animated, Easing, Platform, StyleSheet, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import { COLORS } from "@/constants/Colors";
-
-const AnimatedSvg = Animated.createAnimatedComponent(Svg);
 
 const LoadingSpinner = () => {
   const spinValue = useRef(new Animated.Value(0)).current;
@@ -14,7 +12,8 @@ const LoadingSpinner = () => {
         toValue: 1,
         duration: 1000,
         easing: Easing.linear,
-        useNativeDriver: true,
+        // Pas de pilote natif pour les animations sur le web.
+        useNativeDriver: Platform.OS !== "web",
       })
     ).start();
   }, [spinValue]);
@@ -31,33 +30,30 @@ const LoadingSpinner = () => {
 
   return (
     <View style={styles.spinnerContainer}>
-      <AnimatedSvg
-        width={size}
-        height={size}
-        viewBox={`0 0 ${size} ${size}`}
-        style={{ transform: [{ rotate: spin }] }}
-      >
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={COLORS.pink}
-          strokeOpacity={0.2}
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={COLORS.pink}
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference * 0.70}
-          strokeLinecap="round"
-        />
-      </AnimatedSvg>
+      <Animated.View style={{ transform: [{ rotate: spin }] }}>
+        <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke={COLORS.pink}
+            strokeOpacity={0.2}
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke={COLORS.pink}
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * 0.70}
+            strokeLinecap="round"
+          />
+        </Svg>
+      </Animated.View>
     </View>
   );
 };

@@ -5,6 +5,7 @@ import React, { useEffect, useRef } from "react";
 import {
   Animated,
   Dimensions,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -28,7 +29,7 @@ const MatchNotification = ({ visible, matchedUser, onClose }: MatchNotificationP
     if (visible) {
       Animated.spring(translateY, {
         toValue: insets.top + 10,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== "web",
         bounciness: 8,
       }).start();
 
@@ -42,7 +43,7 @@ const MatchNotification = ({ visible, matchedUser, onClose }: MatchNotificationP
       Animated.timing(translateY, {
         toValue: -200,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== "web",
       }).start();
     }
   }, [visible, insets.top]);
@@ -51,7 +52,7 @@ const MatchNotification = ({ visible, matchedUser, onClose }: MatchNotificationP
     Animated.timing(translateY, {
       toValue: -200,
       duration: 300,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== "web",
     }).start(() => {
       onClose();
     });
@@ -94,11 +95,7 @@ const styles = StyleSheet.create({
     left: 15,
     right: 15,
     zIndex: 9999,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    elevation: 20,
+    boxShadow: "0px 10px 15px rgba(0, 0, 0, 0.3)",
   },
   gradient: {
     borderRadius: 20,
