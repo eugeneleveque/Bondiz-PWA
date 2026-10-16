@@ -28,6 +28,11 @@ FROM nginx:1.27-alpine AS prod
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
 
+# Les fichiers de public/ (manifeste, service worker, icônes) sont recopiés
+# avec les droits du clone : sur un serveur au umask strict (027), Nginx ne
+# peut pas les lire (403 / 404). On les rend lisibles par tous.
+RUN chmod -R a+rX /usr/share/nginx/html
+
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
