@@ -2,7 +2,7 @@ import { COLORS } from "@/constants/Colors";
 import { IMAGES } from "@/constants/Image";
 import { globalStyles } from "@/constants/Styles";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -18,30 +18,11 @@ import DateTimePickerModal from "@/components/DatePickerModal";
 import { showAlert } from "@/utils/alert";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../services/api";
 import Input from "./components/Input";
 
-const INTERESTS_CATEGORIES = [
-  {
-    title: "Sport & Bien-être",
-    interests: ["Sport", "Randonnée", "Yoga", "Méditation", "Danse"],
-    icon: "fitness-outline"
-  },
-  {
-    title: "Art & Créativité",
-    interests: ["Dessin", "Photographie", "Musique", "Théâtre", "Bricolage"],
-    icon: "color-palette-outline"
-  },
-  {
-    title: "Loisirs & Sorties",
-    interests: ["Cinéma", "Voyage", "Gaming", "Lecture", "Mode"],
-    icon: "ticket-outline"
-  },
-  {
-    title: "Nature & Passions",
-    interests: ["Jardinage", "Astronomie", "Animaux", "Volontariat", "Cuisine"],
-    icon: "leaf-outline"
-  }
-];
+type Interet = { id: number; name: string };
+type CategorieInterets = { id: number; name: string; icon?: string; interests: Interet[] };
 
 export default function QuestionnaireScreen() {
   const router = useRouter();
@@ -52,8 +33,11 @@ export default function QuestionnaireScreen() {
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
   const [birthdate, setBirthdate] = useState<Date | null>(null);
   const [city, setCity] = useState("");
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [expandedCategories, setExpandedCategories] = useState<string[]>([INTERESTS_CATEGORIES[0].title]);
+  const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
+  const [categories, setCategories] = useState<CategorieInterets[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [firstName, setFirstName] = useState(params.firstName ?? "");
+  const [lastName, setLastName] = useState("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
   
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -90,6 +74,24 @@ export default function QuestionnaireScreen() {
     hideDatePicker();
   };
 
+  useEffect(() => {
+    const chargerCategories = async () => {
+      try {
+        const res = await apiFetch<any>(
+          "/interest-categories?populate=interests&sort=sortOrder:asc"
+        );
+        const chargees: CategorieInterets[] = res.data ?? [];
+        setCategories(chargees);
+        // La première catégorie est dépliée d'office.
+        if (chargees.length > 0) setExpandedCategories([chargees[0].name]);
+      } catch (error) {
+        console.error("Chargement des centres d'intérêt impossible", error);
+        setError("Impossible de charger les centres d'intérêt. Vérifiez votre connexion.");
+      }
+    };
+    chargerCategories();
+  }, []);
+
   const toggleCategory = (title: string) => {
     if (expandedCategories.includes(title)) {
       setExpandedCategories(expandedCategories.filter(t => t !== title));
@@ -98,11 +100,11 @@ export default function QuestionnaireScreen() {
     }
   };
 
-  const toggleInterest = (interest: string) => {
-    if (selectedInterests.includes(interest)) {
-      setSelectedInterests(selectedInterests.filter(i => i !== interest));
+  const toggleInterest = (interestId: number) => {
+    if (selectedInterests.includes(interestId)) {
+      setSelectedInterests(selectedInterests.filter(i => i !== interestId));
     } else {
-      setSelectedInterests([...selectedInterests, interest]);
+      setSelectedInterests([...selectedInterests, interestId]);
     }
   };
 
@@ -140,8 +142,8 @@ export default function QuestionnaireScreen() {
   };
 
   const handleConfirm = async () => {
-    if (!profileImage || !city || selectedInterests.length < 5) {
-      setError("Veuillez ajouter une photo, renseigner votre ville, et choisir au moins 5 intérêts.");
+    if (!profileImage || !city || !firstName.trim() || selectedInterests.length < 5) {
+      setError("Veuillez renseigner votre prénom, votre ville, ajouter une photo et choisir au moins 5 intérêts.");
       return;
     }
 
@@ -149,20 +151,23 @@ export default function QuestionnaireScreen() {
       setIsSubmitting(true);
       setError(null);
       
-      const { firstName, email, password } = params;
-      
-      if (!firstName || !email || !password) {
+      const { email, password } = params;
+
+      if (!firstName.trim() || !email || !password) {
         throw new Error("Informations d'inscription manquantes. Veuillez recommencer.");
       }
 
       // Formatage de la date en YYYY-MM-DD pour Strapi
       const formattedDate = birthdate?.toISOString().split("T")[0];
 
-      await register(firstName, email, password, {
+      await register(params.firstName ?? firstName, email, password, {
+        firstName: firstName.trim(),
+        lastName: lastName.trim() || undefined,
         gender: selectedGender || undefined,
         age: formattedDate,
         city,
-        interests: selectedInterests,
+        // Relation vers le catalogue : on envoie des identifiants.
+        interestTags: selectedInterests,
       }, profileImage);
       
       router.replace("/");
@@ -268,6 +273,26 @@ export default function QuestionnaireScreen() {
               </TouchableOpacity>
             </View>
 
+            <Text style={styles.stepTitle}>Comment vous appelez-vous ?</Text>
+
+            <View style={styles.inputContainer}>
+              <Input
+                placeholder="Prénom"
+                value={firstName}
+                onChangeText={setFirstName}
+                icon="person-outline"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Input
+                placeholder="Nom (facultatif)"
+                value={lastName}
+                onChangeText={setLastName}
+                icon="person-outline"
+              />
+            </View>
+
             <Text style={styles.stepTitle}>Où habitez-vous ?</Text>
 
             <View style={styles.inputContainer}>
@@ -283,20 +308,20 @@ export default function QuestionnaireScreen() {
             <Text style={styles.counterText}>Sélectionnez au moins 5 ({selectedInterests.length}/5)</Text>
 
             <View style={styles.categoriesContainer}>
-              {INTERESTS_CATEGORIES.map((category) => {
-                const isExpanded = expandedCategories.includes(category.title);
-                const selectedInCategory = category.interests.filter(i => selectedInterests.includes(i)).length;
+              {categories.map((category) => {
+                const isExpanded = expandedCategories.includes(category.name);
+                const selectedInCategory = (category.interests ?? []).filter(i => selectedInterests.includes(i.id)).length;
                 
                 return (
-                  <View key={category.title} style={styles.categoryWrapper}>
+                  <View key={category.id} style={styles.categoryWrapper}>
                     <TouchableOpacity
                       style={styles.categoryHeader}
-                      onPress={() => toggleCategory(category.title)}
+                      onPress={() => toggleCategory(category.name)}
                       activeOpacity={0.7}
                     >
                       <View style={styles.headerLeft}>
-                        <Ionicons name={category.icon as any} size={20} color={COLORS.pink} style={styles.categoryIcon} />
-                        <Text style={styles.categoryTitle}>{category.title}</Text>
+                        <Ionicons name={(category.icon ?? "pricetag-outline") as any} size={20} color={COLORS.pink} style={styles.categoryIcon} />
+                        <Text style={styles.categoryTitle}>{category.name}</Text>
                         {selectedInCategory > 0 && (
                           <View style={styles.categoryBadge}>
                             <Text style={styles.categoryBadgeText}>{selectedInCategory}</Text>
@@ -312,17 +337,17 @@ export default function QuestionnaireScreen() {
 
                     {isExpanded && (
                       <View style={styles.interestsGrid}>
-                        {category.interests.map((interest) => {
-                          const isSelected = selectedInterests.includes(interest);
+                        {(category.interests ?? []).map((interest) => {
+                          const isSelected = selectedInterests.includes(interest.id);
                           return (
                             <TouchableOpacity
-                              key={interest}
+                              key={interest.id}
                               style={[styles.interestChip, isSelected && styles.interestChipSelected]}
-                              onPress={() => toggleInterest(interest)}
+                              onPress={() => toggleInterest(interest.id)}
                               activeOpacity={0.7}
                             >
                               <Text style={[styles.interestText, isSelected && styles.interestTextSelected]}>
-                                {interest}
+                                {interest.name}
                               </Text>
                             </TouchableOpacity>
                           );

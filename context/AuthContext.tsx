@@ -11,10 +11,13 @@ export type User = {
   id: number;
   username: string;
   email: string;
+  firstName?: string;
+  /** Jamais renvoyé par l'API : seulement envoyé à l'inscription. */
+  lastName?: string;
   age?: number | string;
   gender?: string;
   city?: string;
-  interests?: string[];
+  interestTags?: { id: number; name: string; category?: { id: number; name: string } }[];
   image?: string;
   bio?: string;
   self_image?: any[];
@@ -28,10 +31,22 @@ type AuthContextType = {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string, additionalData?: Partial<User>, imageUri?: string) => Promise<void>;
+  register: (
+    username: string,
+    email: string,
+    password: string,
+    additionalData?: ProfilePayload,
+    imageUri?: string
+  ) => Promise<void>;
   updateUser: (data: Partial<User>) => Promise<void>;
   logout: () => Promise<void>;
 };
+
+/**
+ * Ce que l'app envoie à Strapi pour compléter un profil : les centres
+ * d'intérêt partent en identifiants, alors que l'API les renvoie en objets.
+ */
+export type ProfilePayload = Omit<Partial<User>, "interestTags"> & { interestTags?: number[] };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -60,16 +75,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  /**
+   * /auth/local ne renvoie pas les relations : on recharge le profil complet
+   * pour disposer de la photo et des centres d'intérêt.
+   */
+  const PROFIL_COMPLET = "/users/me?populate[self_image]=true&populate[interestTags][populate]=category";
+
+  async function fetchProfilComplet(jwt: string, secours: User) {
+    try {
+      return await apiFetch<User>(PROFIL_COMPLET, {}, jwt);
+    } catch (error) {
+      console.error("Chargement du profil complet impossible", error);
+      return secours;
+    }
+  }
+
   async function login(identifier: string, password: string) {
     const data = await apiFetch<{ jwt: string; user: User }>("/auth/local", {
       method: "POST",
       body: JSON.stringify({ identifier, password }),
     });
 
-    await saveAuthData(data.jwt, data.user);
+    await saveAuthData(data.jwt, await fetchProfilComplet(data.jwt, data.user));
   }
 
-  async function register(username: string, email: string, password: string, additionalData?: Partial<User>, imageUri?: string) {
+  async function register(
+    username: string,
+    email: string,
+    password: string,
+    additionalData?: ProfilePayload,
+    imageUri?: string
+  ) {
     // Étape 1 : Création du compte (Strapi register n'accepte que username, email, password)
     const data = await apiFetch<{ jwt: string; user: User }>("/auth/local/register", {
       method: "POST",
@@ -106,7 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           body: JSON.stringify(additionalData),
         }, data.jwt);
 
-        await saveAuthData(data.jwt, updatedUser);
+        await saveAuthData(data.jwt, await fetchProfilComplet(data.jwt, updatedUser));
         currentUser = updatedUser;
       } catch (updateError) {
         console.error("Failed to update user profile after registration", updateError);
