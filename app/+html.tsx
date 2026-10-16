@@ -21,6 +21,17 @@ export default function Root({ children }: PropsWithChildren) {
 
         <ScrollViewStyleReset />
         <style dangerouslySetInnerHTML={{ __html: "body { background-color: #8432fe; }" }} />
+        {/*
+          App installée sur iPhone : avec la barre d'état transparente, iOS
+          retire sa hauteur de celle de la page (100 %) alors que la page
+          commence tout en haut de l'écran. Il restait une bande vide en bas.
+          100vh correspond, lui, à toute la hauteur de l'écran.
+        */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: "@media (display-mode: standalone) { html, body, #root { height: 100vh; } }",
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>
