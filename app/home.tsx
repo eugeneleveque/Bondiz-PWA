@@ -203,7 +203,7 @@ const HomeScreen = () => {
       isLiked={sentLikeIds.includes(currentUser.id)}
       handleLike={handleLike}
       insets={insets}
-      currentUserInterests={user?.interests || []}
+      currentUserInterests={(user?.interestTags ?? []).map((tag) => tag.name)}
       setMainScrollEnabled={setMainScrollEnabled}
     />
   );
@@ -345,24 +345,24 @@ const UserCard = ({
               {userAge} Ans
             </Text>
             
-            {currentUser?.interests && currentUser.interests.length > 0 && (
+            {currentUser?.interestTags && currentUser.interestTags.length > 0 && (
               <ScrollView 
                 horizontal 
                 showsHorizontalScrollIndicator={false} 
                 style={styles.interestsContainer}
                 contentContainerStyle={styles.interestsContent}
               >
-                {currentUser.interests.map((interest: string, index: number) => {
-                  const isCommon = currentUserInterests.includes(interest);
+                {currentUser.interestTags.map((interest: { id: number; name: string }) => {
+                  const isCommon = currentUserInterests.includes(interest.name);
                   return (
                     <View 
-                      key={index} 
+                      key={interest.id} 
                       style={[
                         styles.interestTag,
                         isCommon && styles.commonInterestTag
                       ]}
                     >
-                      <Text style={styles.interestTagText}>{interest}</Text>
+                      <Text style={styles.interestTagText}>{interest.name}</Text>
                     </View>
                   );
                 })}
